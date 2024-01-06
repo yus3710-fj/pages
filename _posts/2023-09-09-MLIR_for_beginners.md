@@ -43,7 +43,7 @@ Valueは接頭辞`%`が付いた識別子をもつものとして表現される
 ここでいう識別子とは、数値または数字以外から始まる文字列である。  
 例: `%foo`, `%2`
 
-また、Valueは配列にもなる。定義の時は`:`の後ろに大きさを書き、参照の時は`#`の後ろに添字(0-index)を書く。  
+また、Valueは配列にもなる。定義の時は`:`の後ろに大きさを書き、参照の時は`#`の後ろに添字(0-based)を書く。  
 例: 
 ```
 // 2つの結果を返すfooというOperationの結果を、大きさ2のresultというValueで受ける
@@ -93,7 +93,7 @@ Operationで様々なものを表現できるようにいろいろな構成要�
     * `loc("example.ll":9:17)`のような形式で表現される。
 
 あとdialectごとに表現形式を自由に拡張できるらしい。  
-(関数定義がこのルールに従ってないのはfunc dialectの*custom assembly form*だったりする？)
+(関数定義がこのルールに従ってないように見えるのはfunc dialectの*custom assembly form*だったりする？)
 
 ## Block
 LLVM IRのBasicBlock相当。
@@ -135,7 +135,7 @@ builtin dialectに定義されており、top-levelのOperationとしてIRを格
 ## 名前の有効範囲(スコープ)
 Cのブロックと同じような感覚で変数のスコープはRegion内で閉じている。  
 ただし例外があって、あるOperationについてオペランドの値を参照することが正当であるならば、そのOperationが持つRegionの中のOperationは(Regionの外で定義されたものにも関わらず)その値を参照できる。
-これが気に入らない場合は、OpTrait::IsolatedFromAboveなどのTraitsやカスタムVerifierで制限できる。
+これが気に入らない場合は、OpTrait::IsolatedFromAboveなどのTraitsやユーザ定義のVerifierで制限できる。
 
 ある値が同一Regionの他のOperationから参照できるかはRegionの種類で決まる。  
 あるRegion内で定義された値は、そのRegion内に親を持つOperationから参照できる。(ただし親がその値を参照できる場合に限る。)
@@ -168,13 +168,22 @@ Attributeも型と同様、組込みのAttributeかAttributeの別名かdialect�
 Operationのところでちょこっと書いたが、Operationに追加情報を持たせることができる。
 これらはAttributeの形で表現できるほか、Interfaceのアクセサからも見れる。
 
-### Interface
-DialectレベルのInterfaceとAttribute/Operation/TypeのInterfaceがある。
-
-いまいち使い方が分からない。
-
 ### Trait
-いまいち使い方が分からない。
+その名の通り、Operationなどの特性を表す。
+最適化をかけるときに使われる情報で、以下のようなものがある。(ユーザで新たに定義することも可能)
+https://mlir.llvm.org/docs/Traits/#operation-traits-list
+
+### Interface
+いまいち使い方が分からない。というか使い道の幅が結構広い気がする。
+
+ざっくりいうと最適化に使うための情報を引き出すための関数(interface method)をOperationなどのメンバに持たせることができる機能という感じ。
+Traitだとその特性があるかないかだけだが、Interfaceだともっと個別具体的な情報がいろいろ得られるようになる。
+
+InterfaceにはDialectレベルのものとAttribute/Operation/Typeのものがある。  
+一番よく使われるのはOperationのInterfaceだと思われる。
+例えば`LoopLikeOpInterface`を持つOperationは、ループ構造を持つという単なる特性にとどまらず、ループの誘導変数(`getSingleInductionVar`)やループの回転範囲(`getSingleLowerBound`など)の情報を得ることができる。  
+DialectレベルのInterfaceの例としては`DialectInlinerInterface`がある。
+コストモデルやインライン展開の正当性など、OperationそれぞれというよりDialect全体に係るような情報を提供する。
 
 ## Dialect
 MLIRの拡張性を担っている概念である。  
