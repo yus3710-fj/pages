@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "MLIR入門"
+title:  "MLIRの実装"
 date:   2024-07-20 13:55:54 +0900
 categories: コンパイラ
 tag: mlir
