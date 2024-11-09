@@ -155,7 +155,7 @@ ModuleもFunctionもInstructionも、MLIRにおいては等しくOperationであ
 
 [2020-02-26 - CGO 2020 Talk](https://docs.google.com/presentation/d/11-VjSNNNJoRhPlLxFgvtb909it1WNdxTnQFipryfAPU/edit#slide=id.g7d334b12e5_0_258)より図を拝借して、まずは各階層へのアクセスの仕方を確認する。
 
-![MLIRの構造]({{site.baseurl}}/images/2024-07-20/MLIR_Structure.png)
+![MLIRの構造]({{site.baseurl}}/assets/img/2024-07-20/MLIR_Structure.png)
 
 ___
 
