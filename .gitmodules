@@ -1,3 +1,6 @@
 [submodule "themes/minima"]
 	path = themes/minima
 	url = https://github.com/jekyll/minima.git
+[submodule "themes/cayman"]
+	path = themes/cayman
+	url = https://github.com/pages-themes/cayman.git
