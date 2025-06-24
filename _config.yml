@@ -31,6 +31,7 @@ github_username:  yus3710-fj
 theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
+github: [metadata]
 
 # Exclude from processing.
 # The following items will not be processed, by default.
