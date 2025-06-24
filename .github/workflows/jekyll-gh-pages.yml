@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
@@ -35,9 +37,6 @@ jobs:
         with:
           source: ./
           destination: ./_site
-          token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          PAGES_REPO_NWO: ${{ github.repository }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
