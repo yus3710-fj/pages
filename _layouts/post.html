@@ -17,7 +17,10 @@ layout: default
 
   <div class="post-content e-content" itemprop="articleBody">
     <p>{{ page.preface | default: page.description }}</p>
-    {{ content | toc }}
+    {%- if page.toc -%}
+      {% include toc.html html=content id="toc" %}
+    {%- endif -%}
+    {{ content }}
   </div>
 
   {%- if site.disqus.shortname -%}

@@ -31,7 +31,6 @@ github_username:  yus3710-fj
 theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
-  - jekyll-toc
 
 # Front Matter Defaults
 defaults:
