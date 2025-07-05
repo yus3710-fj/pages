@@ -1,0 +1,29 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+.project-name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* from: https://idratherbewriting.com/documentation-theme-jekyll/mydoc_icons.html#external-icons */
+/* this part adds an icon after external links, using FontAwesome*/
+a:not(.project-name) a[href^="http://"]:after, a[href^="https://"]:after {
+    content: "\f08e";
+    font-family: FontAwesome;
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    text-decoration: none;
+    padding-left: 3px;
+}
+
+#toc {
+  background-color: #fff;
+  margin: 5px 0;
+  padding: 10px 30px;
+  border: 1px solid #e8e8e8;
+  border-radius: 3px;
+}

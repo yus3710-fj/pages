@@ -31,6 +31,16 @@ github_username:  yus3710-fj
 theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
+  - jekyll-toc
+
+# Front Matter Defaults
+defaults:
+  -
+    scope:
+      path: "" # an empty string here means all files in the project
+      type: "posts" # previously `post` in Jekyll 2.2.
+    values:
+      toc: true
 
 # Exclude from processing.
 # The following items will not be processed, by default.
