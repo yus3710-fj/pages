@@ -31,6 +31,7 @@ github_username:  yus3710-fj
 theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
+  - jekyll-relative-links
 markdown: CommonMarkGhPages
 commonmark:
   options: ["UNSAFE", "SMART", "FOOTNOTES"]
