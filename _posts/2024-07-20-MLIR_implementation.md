@@ -201,4 +201,4 @@ ___
 この関数は引数に関数を取ることができ、そのOperationを起点に順次Operationを探索していき関数を適用していく。
 デフォルトでは後行順の深さ優先探索(葉から辿る)をするが、テンプレート引数で設定すれば先行順で(根から)辿る。
 
-[https://mlir.llvm.org/docs/Tutorials/UnderstandingTheIRStructure/#walkers](https://mlir.llvm.org/docs/Tutorials/UnderstandingTheIRStructure/#walkers)
+https://mlir.llvm.org/docs/Tutorials/UnderstandingTheIRStructure/#walkers

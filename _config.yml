@@ -31,6 +31,10 @@ github_username:  yus3710-fj
 theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
+markdown: CommonMarkGhPages
+commonmark:
+  options: ["UNSAFE", "SMART", "FOOTNOTES"]
+  extensions: ["strikethrough", "autolink", "table", "tagfilter"]
 
 # Front Matter Defaults
 defaults:

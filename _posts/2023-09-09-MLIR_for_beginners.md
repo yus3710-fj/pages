@@ -198,7 +198,7 @@ MLIRでは複数のDialectを使うことができる。
 これは部分的にDialectを変換していく仕組みであり、上述の仕様をうまく利用したものとなっている。(因果関係が逆かもしれない。)
 
 ### Dialectの例
-[https://mlir.llvm.org/docs/Dialects/](https://mlir.llvm.org/docs/Dialects/)
+https://mlir.llvm.org/docs/Dialects/
 * Builtin
 * llvm
 * func
