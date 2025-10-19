@@ -10,17 +10,17 @@ tag: llvm mlir
 
 珍しく人に読まれることを意識して書いていて、柄にもなく敬体です。
 
-# 概要
+## 概要
 [LLVM Flang](https://flang.llvm.org/docs/)は内部でのプログラム表現(IR)としてFIRという独自の表現方法を使っています。
 これは[MLIR](https://mlir.llvm.org/)の仕組みを利用したものですが、正直なところ、最適化観点では現状MLIRを活用できていないと思っています。
 その理由として、ほとんどがFIR独自の表現であり、MLIR付属のdialectはごく一部しか使われないことが挙げられます。
 
 この記事ではFortranプログラムをMLIR付属のdialect**だけ**で表現しようとするとどうなるかを検証します。
 
-# 前提知識
+## 前提知識
 概要を一発で理解できた人はほとんどいないと思うので
 
-## コンパイラとIR
+### コンパイラとIR
 <details><summary>いろいろ書いたら長くなってしまったので折り畳み</summary>
 
 コンパイラが何なのかを知っている人は多いと思います。
@@ -34,7 +34,7 @@ tag: llvm mlir
 これを中間表現(Intermediate Representation、略してIR)と呼びます。
 このIRには決まった規格などはなく、各コンパイラが扱いやすいよう自由に設計できます。
 
-### LLVM IR
+#### LLVM IR
 
 機械語の生成はコンパイラを作ることで楽になりましたが、プログラムの最適化などコンパイラに求められる機能が増えてくると、今度はそのコンパイラを作るのが大変だなとなってきます。
 そのため、コンパイラを作るための基盤が欲しくなります。
@@ -45,7 +45,7 @@ tag: llvm mlir
 
 例えば、自作言語のコンパイラが作りたいのなら自作言語をLLVM IRに変換するフロントエンドだけ作ればいいし、自作CPU向けコンパイラが作りたいのならLLVM IRを自作CPUの命令に変換するバックエンドだけ作ればいいことになります。
 
-### MLIR
+#### MLIR
 
 LLVMによってコンパイラを作るのは楽になりました。
 ですが、ターゲットデバイスの種類はそこまで増えるようなものではない一方、自分のプログラムをLLVM IRに変換するニーズはいくらでも増えていきます。
@@ -67,13 +67,13 @@ MLIRを使えば複雑な処理をいくつかのパーツに分解し、それ�
 
 </details>
 
-## Fortran
+### Fortran
 Fortranは数値計算が得意なプログラミング言語です。
 数値計算ならNumPyで良くない？という声が聞こえてきそうですが、実はNumPyの中ではFortranで書かれたライブラリが使われていたりします。
 そういったこともあり、数値計算をごりごり行うシミュレーションの分野でよく使われている言語です。
 ちなみにFortran(またはFORTRAN)の歴史は長く、1950年代に登場した最古の高級プログラミング言語なんて言われていますが、時代に合わせて規格改定が継続的に行われており、直近では2023年に最新の規格が制定されている~~イカしたナウい~~言語です。
 
-## LLVM Flang
+### LLVM Flang
 LLVM Flang(以下Flang)はLLVMをベースとしたFortranコンパイラ(厳密にはFortranフロントエンド)です。
 Clangを知っている人もいるかもしれませんが、あれのFortran版です。
 現状ではまだ成熟したとは言えない状況ですが、よくあるFortranプログラムであれば問題なく使える程度には開発が進んでいると思います。
@@ -82,7 +82,7 @@ Clangを知っている人もいるかもしれませんが、あれのFortran�
 これら独自のIRはMLIRのdialectとして実装されています。
 (MLIRのプロジェクトには取り込まれていません。)
 
-### 課題
+#### 課題
 MLIRの強みはいろんなdialectをごちゃまぜにした状態で部分的にコード変換を適用できるところにあるのですが、現状のFlangは一部を除きすべてFIR dialectのままコード変換されていき、最後にまとめてLLVM IRに変換します。
 これによってFortranの言語機能を漏れなく表現できるというメリットもあるのですが、既に存在するMLIRの最適化機能をFlangでは利用できません。
 例えばループを表す表現として`scf.for`や`affine.for`といったものがMLIRにあり、これらに対する最適化も存在します。
@@ -93,7 +93,7 @@ MLIRの強みはいろんなdialectをごちゃまぜにした状態で部分的
 
 [^duplicate_pass]: 逆にMLIR側をFIRに歩み寄らせる方法もあるとは思います。受け入れられるかは未知数ですが。
 
-# 検証
+## 検証
 お題として用意したFortranソースコードに対してFlangが生成するFIRを書き換え、FIR dialectを根絶した状態で`mlir-opt`と`mlir-translate`を使ってLLVM IRを生成します。
 そしてそれをコンパイルし、期待通りの実行結果が得られることを確認します。
 Flang独自のランタイムライブラリに関してはそのまま使ってもよいものとします。  
@@ -113,7 +113,7 @@ Flang独自のランタイムライブラリに関してはそのまま使って
     $ flang sample.ll -L/path/to/build/lib -lmlir_c_runner_utils
     ```
 
-## お題1: 変数宣言、ループ
+### お題1: 変数宣言、ループ
 以下のFortranプログラムからLLVM IRを生成します。
 
 ```fortran
@@ -250,7 +250,7 @@ module attributes {dlti.dl_spec = #dlti.dl_spec<#dlti.dl_entry<f16, dense<16> : 
 $ mlir-opt -pass-pipeline="builtin.module(func.func(convert-scf-to-cf,convert-arith-to-llvm),finalize-memref-to-llvm,canonicalize,convert-func-to-llvm,reconcile-unrealized-casts)" level1.mlir | mlir-translate --mlir-to-llvmir -o level1.ll
 ```
 
-### 解説
+#### 解説
 * `fir.alloca`は`memref.alloca`に変換します
 * `fir.convert`は対応するキャスト(今回は`arith.index_cast`)に変換します
 * `fir.do_loop`は`scf.for`に変換します
@@ -273,7 +273,7 @@ $ mlir-opt -pass-pipeline="builtin.module(func.func(convert-scf-to-cf,convert-ar
 * PRINT文に対応する関数は、今回は`printf`に変換します
 * `fir.declare`に関しては完全にFlang独自の概念(変数の宣言文)なので一旦無視します
 
-### 考察
+#### 考察
 * `fir.global`を`memref.global`へ変換する際に属性を`internal`から`private`へ変換していますが、`llvm.mlir.global`はinternalもprivateもあるようなので、`fir.global`を使った方がいいのかもしれません。
 * MLIRに`string`型なる文字列型を導入してもよさそうと思いました。
   * むしろなぜないのでしょうか…？
@@ -282,7 +282,7 @@ $ mlir-opt -pass-pipeline="builtin.module(func.func(convert-scf-to-cf,convert-ar
 [^overflow]: 8bitで計算するとオーバーフローするのですが、言語規格には別に8bitのまま計算しろとは書かれていないので、Flangではなるべく正確に計算するために1wordで計算します。
 [^gfort_loop]: といいつつGFortranはCみたいなコードを生成してるようですね…
 
-## お題2: 配列(超単純ver.)
+### お題2: 配列(超単純ver.)
 以下のFortranプログラムからLLVM IRを生成します。
 
 ```fortran
@@ -492,7 +492,7 @@ module attributes {dlti.dl_spec = #dlti.dl_spec<#dlti.dl_entry<i1, dense<8> : ve
 $ mlir-opt -pass-pipeline="builtin.module(func.func(convert-scf-to-cf,convert-arith-to-llvm),expand-strided-metadata,finalize-memref-to-llvm,canonicalize,cse,convert-func-to-llvm,reconcile-unrealized-casts)" level1.mlir | mlir-translate --mlir-to-llvmir -o level1.ll
 ```
 
-### 解説
+#### 解説
 * 配列は`memref`で表現します
   * `tensor`かと思いましたが、`tensor`はグローバル変数になれません。
 * `fir.shape`は今回不要だったので無視します
@@ -507,7 +507,7 @@ $ mlir-opt -pass-pipeline="builtin.module(func.func(convert-scf-to-cf,convert-ar
     * このフォーマットが[MLIR](https://mlir.llvm.org/docs/TargetLLVMIR/#ranked-memref-types)の`memref`と[Flang](https://flang.llvm.org/docs/RuntimeDescriptor.html#proposal)の`fir.box`で違います。
     * この変換は`finalize-memref-to-llvm`を通した後に手で実施しています。
 
-### 考察
+#### 考察
 * Descriptorに関しては、memrefの方に完全移行するのはなんとなく難しいのではないかと思います。
   * 例えばポインタかALLOCATABLEかそのどちらでもないか、という情報はmemrefの方で持つ意味がなさそうです。
   * なので、MLIRのDescriptorからFlangのDescriptorに変換するのを`fir.embox`で出来るようになるといいのかなと思いました。
@@ -619,7 +619,7 @@ module attributes {dlti.dl_spec = #dlti.dl_spec<#dlti.dl_entry<i1, dense<8> : ve
 
 </details>
 
-## お題3: 派生型
+### お題3: 派生型
 以下のFortranプログラムからLLVM IRを生成します。
 
 ```fortran
@@ -703,17 +703,17 @@ module attributes {dlti.dl_spec = #dlti.dl_spec<#dlti.dl_entry<f80, dense<128> :
 
 これに対して用意したMLIRはありません。
 
-### 解説
+#### 解説
 派生型を表現できそうなのは`tuple`だと思うのですが、`tuple`には関連する操作が定義されていないほか、変換規則も存在しません。
 これは意図的にそうしているそうです。
 `tuple`にはどんなdialectの型を組み合わせても問題ないはずで、それをMLIR側で全部考慮するのは不可能だからです。
 言い換えると、必要なものがあるなら`tuple`を使う側の責任で実装しなさいということです。
 
-### 考察
+#### 考察
 さすがに`llvm.struct`を使えば表現できるとは思いますが、`fir.type`の方がある程度抽象化されていて表現しやすいと思います。
 例えば派生型の成分は連想配列の感覚で取得できます。
 
-## お題4: 形状引継ぎ配列、部分配列
+### お題4: 形状引継ぎ配列、部分配列
 以下のFortranプログラムからLLVM IRを生成します。
 
 ```fortran
@@ -885,24 +885,24 @@ module attributes {dlti.dl_spec = #dlti.dl_spec<#dlti.dl_entry<f80, dense<128> :
 
 ```
 
-### 解説
+#### 解説
 * このお題を設定した意図はtensor dialect(とlinalg dialect)の検証だったのですが、引数を通して`tensor`をやりとりする術がないことがとりあえず分かりました
   * `tensor.insert_slice`はtensorをコピーしてそこに要素を挿入するため、`tensor.store`のような操作がないと`arg0`のtensorに反映されません。
   * `bufferization.to_memref`と`memref.copy`の組み合わせも考えましたが、`bufferization.to_memref`は型変換ではなく、新たにメモリ領域を確保してそこにコピーしているので同じ帰結になります。
   * `linalg.copy`を使うことも考えましたが、やはり同じ帰結になります。
 
-### 考察
+#### 考察
 引数の`tensor`をbufferizeする機能が試験的な実装に留まっていることと関係があるのかなと思いました。
 将来的にこの辺りが整備されてくれば、`tensor`を使って配列を表現する手段が確立できるかもしれません。
 
-# 関連研究
+## 関連研究
 ちょうど検証をしていた時期に以下の論文が発表されていました。
 みんな考えることは同じですね。
 (なのでこの記事は完全に二番煎じになってしまいました。)
 
 [Fully integrating the Flang Fortran compiler with standard MLIR](https://arxiv.org/abs/2409.18824)
 
-## 内容
+### 内容
 
 * FlangはHLFIR->FIR->LLVM IRとLoweringしている
   * FIRからMLIR付属のdialectを経由せずいきなりLLVM IRに変換している
@@ -926,7 +926,7 @@ module attributes {dlti.dl_spec = #dlti.dl_spec<#dlti.dl_entry<f80, dense<128> :
     * `DOT_PRODUCT`の性能が3.33倍向上
   * つまり既存のFlangの変換処理は実行効率の悪いものになっているということが言えるので、開発コミュニティはこの結果を真剣に受け止めるべき
 
-## 気になったところ
+### 気になったところ
 概ね共感していますが、主に言語仕様の観点で気になったところがあったので書いておきます。
 
 * 引数の型を`!fir.ref<i32>`から`i32`に変えている
@@ -947,7 +947,7 @@ module attributes {dlti.dl_spec = #dlti.dl_spec<#dlti.dl_entry<f80, dense<128> :
   * 既に確定した値を持っている割付け変数が再割付けされるとそれらの値がどうなるのか次第だと思います。(未確認)
   * 今のMLIRにはポインタ変数を扱う術がないので苦しいですね。
 
-# おわりに
+## おわりに
 いかがでしたか？
 
 今回はFortranプログラムをMLIR付属のdialectだけで表現してみました。

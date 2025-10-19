@@ -5,7 +5,7 @@ date:   2024-07-20 13:55:54 +0900
 categories: コンパイラ
 tag: mlir
 ---
-# 導入
+## 導入
 [前回](../../../2023/09/09/MLIR_for_beginners.html)はMLIRの概念的な部分の説明に徹して、実装部分の話はほとんどしなかった。
 
 今回はいよいよ実装部分に踏み込む。
@@ -14,8 +14,8 @@ tag: mlir
 
 結構雑に書いているので、この記事の基になっている公式の[チュートリアル](https://mlir.llvm.org/docs/Tutorials/)も適宜参照するとよいと思う。
 
-# 実装方法
-## Dialect
+## 実装方法
+### Dialect
 まずはDialect自身を定義する。
 
 MLIRはそれ自身が中間言語というわけではなく、中間言語を定義するためのフレームワークでしかない。
@@ -46,7 +46,7 @@ TableGenは独自の文法からC++コードを生成する仕組みだが、そ
 
 Dialectは定義するだけではダメで、実際に使用するには`MLIRContext`に`loadDialect()`で読み込ませる必要がある。(どのタイミングで？)
 
-### Op (Operation)
+#### Op (Operation)
 Dialectが定義できたら中身を実装していく。
 まずはIRの基本構成要素であるOperationを定義する。
 
@@ -77,9 +77,9 @@ ODSではまずDialectのOperationを定義する`Op`のサブクラスを定義
 Operationも定義するだけではダメで、使用するためには先ほど定義したDialectのクラスの`initialize()`内で`addOperations()`を呼ぶ必要がある。  
 このとき、`GET_OP_LIST`というマクロを定義した上で`-gen-op-defs`で生成されたファイルをインクルードすると簡潔に書ける。([参考](https://note.com/lewuathe/n/na64b95954988))
 
-### Type
+#### Type
 
-### Interface
+#### Interface
 一番使用頻度が高いのはOperationのInterfaceだと思うのでそれを中心に説明する。
 
 OperationのInterfaceは[mlir/include/mlir/IR/OpDefinition.h](https://github.com/llvm/llvm-project/blob/main/mlir/include/mlir/IR/OpDefinition.h)にある`OpInterface`を継承して定義する。
@@ -95,7 +95,7 @@ interface methodは`method`というメンバの中に列挙していく。
 
 DialectInterfaceを一から定義する方法は不明だが、定義したDialectInterfaceを使用するためにはDialectのクラスの`initialize()`内で`addInterfaces()`を呼ぶ必要がある。
 
-### Pass
+#### Pass
 DialectにはOperationが定義されれば十分かといわれるとそうではない。
 Dialectによる中間表現は、表現できることだけでなく、LLVM dialect、そしてLLVM IRに変換されていくことが求められる。
 多くのDialectでは`IR`というディレクトリにOperationの定義、`Transforms`というディレクトリにOperationの変換規則(Pass)の定義がされている。
@@ -144,11 +144,11 @@ MLIRではこれをDRR(Declarative Rewrite Rule)と呼んでいる。
 中でやっていることは大したことはなく、ODSで勝手に作ってくれる。
 (ODSで`constructor`を明に定義しておけばユーザ好みにカスタマイズできる)
 
-## IR
+### IR
 Dialectを定義する方法を前節で述べた。ただこれだけの情報ではパスの中身は実装できないと思う。
 ここからはMLIRの構造の実装を見ていく。
 
-### 構造
+#### 構造
 LLVM IRの場合は、Module->Function->BasicBlock->Instructionと階層がはっきり分かれている。
 対してMLIRの場合は、前回説明した通りOperationを中心として、Operation自身が階層構造を持つようになっている。
 ModuleもFunctionもInstructionも、MLIRにおいては等しくOperationである。
@@ -193,7 +193,7 @@ ___
 `Operation*`は`mlir::dyn_cast`を使って前項で定義したような任意の`Op`のサブクラスに変換できる。
 また、OperationがあるInterfaceを持っているかどうかは、該当Interfaceのクラスに`dyn_cast`できるかで判別できる。
 
-### Walker
+#### Walker
 例えばModuleからIR全体を探索して各Operationに対して同じ処理を行いたいとなったときに、便利な機能がある。
 それがWalkerである。
 正確に言えば`Operation::walk()`である。
